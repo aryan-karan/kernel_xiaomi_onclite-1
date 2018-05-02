@@ -84,6 +84,7 @@
 #include <linux/kaiser.h>
 #include <linux/cache.h>
 #include <linux/jump_label.h>
+#include <linux/scs.h>
 
 #include <asm/io.h>
 #include <asm/bugs.h>
@@ -491,6 +492,8 @@ asmlinkage __visible void __init start_kernel(void)
 	char *p=NULL;
 
 	set_task_stack_end_magic(&init_task);
+	scs_set_init_magic(&init_task);
+
 	smp_setup_processor_id();
 	debug_objects_early_init();
 
