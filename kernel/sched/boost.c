@@ -148,7 +148,6 @@ static void _sched_set_boost(int type)
 		if (boost_refcount[FULL_THROTTLE_BOOST] == 1) {
 			core_ctl_set_boost(true);
 			restore_cgroup_boost_settings();
-			boost_kick_cpus();
 			if (!boost_refcount[RESTRAINED_BOOST])
 				walt_enable_frequency_aggregation(true);
 		}
@@ -157,10 +156,8 @@ static void _sched_set_boost(int type)
 	case CONSERVATIVE_BOOST:
 	    boost_refcount[CONSERVATIVE_BOOST]++;
 		if ((boost_refcount[CONSERVATIVE_BOOST] == 1) &&
-				!boost_refcount[FULL_THROTTLE_BOOST]) {
+				!boost_refcount[FULL_THROTTLE_BOOST])
 			update_cgroup_boost_settings();
-			boost_kick_cpus();
-		}
 		break;
 
 	case RESTRAINED_BOOST:
