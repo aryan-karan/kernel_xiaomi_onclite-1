@@ -460,6 +460,7 @@ static void gsi_handle_ieob(int ee)
 	unsigned long flags;
 	unsigned long cntr;
 	uint32_t msk;
+	bool empty;
 
 	ch = gsi_readl(gsi_ctx->base +
 		GSI_EE_n_CNTXT_SRC_IEOB_IRQ_OFFS(ee));
@@ -487,6 +488,7 @@ static void gsi_handle_ieob(int ee)
 			spin_lock_irqsave(&ctx->ring.slock, flags);
 check_again:
 			cntr = 0;
+			empty = true;
 			rp = gsi_readl(gsi_ctx->base +
 				GSI_EE_n_EV_CH_k_CNTXT_4_OFFS(i, ee));
 			rp |= ctx->ring.rp & 0xFFFFFFFF00000000;
@@ -500,8 +502,10 @@ check_again:
 					break;
 				}
 				gsi_process_evt_re(ctx, &notify, true);
+				empty = false;
 			}
-			gsi_ring_evt_doorbell(ctx);
+			if (!empty)
+				gsi_ring_evt_doorbell(ctx);
 			if (cntr != 0)
 				goto check_again;
 			spin_unlock_irqrestore(&ctx->ring.slock, flags);
