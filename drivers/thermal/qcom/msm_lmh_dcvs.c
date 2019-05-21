@@ -536,12 +536,21 @@ static int limits_dcvs_probe(struct platform_device *pdev)
 		of_node_put(lmh_node);
 	}
 
+	hw = devm_kzalloc(&pdev->dev, sizeof(*hw), GFP_KERNEL);
+	if (!hw)
+		return -ENOMEM;
 	/*
-	 * We return error if none of the CPUs have
+	 * We just init regulator if none of the CPUs have
 	 * reference to our LMH node
 	 */
-	if (cpumask_empty(&mask))
-		return -EINVAL;
+	if (cpumask_empty(&mask)) {
+		limits_isens_vref_ldo_init(pdev, hw);
+		mutex_lock(&lmh_dcvs_list_access);
+		INIT_LIST_HEAD(&hw->list);
+		list_add_tail(&hw->list, &lmh_dcvs_hw_list);
+		mutex_unlock(&lmh_dcvs_list_access);
+		return 0;
+	}
 
 	ret = limits_dcvs_get_freq_limits(cpumask_first(&mask), &max_freq,
 				     &min_freq);
