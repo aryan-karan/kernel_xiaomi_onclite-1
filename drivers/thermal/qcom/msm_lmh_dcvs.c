@@ -72,6 +72,7 @@
 #define LIMITS_CLUSTER_1_INT_CLR    0x17D70808
 #define LIMITS_CLUSTER_0_MIN_FREQ   0x17D78BC0
 #define LIMITS_CLUSTER_1_MIN_FREQ   0x17D70BC0
+
 #define dcvsh_get_frequency(_val, _max) do { \
 	_max = (_val) & 0x3FF; \
 	_max *= 19200; \
@@ -613,6 +614,45 @@ static int limits_dcvs_probe(struct platform_device *pdev)
 
 	no_cdev_register = of_property_read_bool(dn,
 				"qcom,no-cooling-device-register");
+
+	/* Check legcay LMH HW enablement is needed or not */
+	if (of_property_read_bool(dn, "qcom,legacy-lmh-enable")) {
+		/* Enable the thermal algorithm early */
+		ret = limits_dcvs_write(hw->affinity, LIMITS_SUB_FN_THERMAL,
+			 LIMITS_ALGO_MODE_ENABLE, 1, 0, 0);
+		if (ret) {
+			pr_err("Unable to enable THERM algo for cluster%d\n",
+				affinity);
+			return ret;
+		}
+		/* Enable the LMH outer loop algorithm */
+		ret = limits_dcvs_write(hw->affinity, LIMITS_SUB_FN_CRNT,
+			 LIMITS_ALGO_MODE_ENABLE, 1, 0, 0);
+		if (ret) {
+			pr_err("Unable to enable CRNT algo for cluster%d\n",
+				affinity);
+			return ret;
+		}
+		/* Enable the Reliability algorithm */
+		ret = limits_dcvs_write(hw->affinity, LIMITS_SUB_FN_REL,
+			 LIMITS_ALGO_MODE_ENABLE, 1, 0, 0);
+		if (ret) {
+			pr_err("Unable to enable REL algo for cluster%d\n",
+				affinity);
+			return ret;
+		}
+		/* Enable the BCL algorithm */
+		ret = limits_dcvs_write(hw->affinity, LIMITS_SUB_FN_BCL,
+			 LIMITS_ALGO_MODE_ENABLE, 1, 0, 0);
+		if (ret) {
+			pr_err("Unable to enable BCL algo for cluster%d\n",
+				affinity);
+			return ret;
+		}
+		ret = enable_lmh();
+		if (ret)
+			return ret;
+	}
 
 	addr = of_get_address(dn, 0, NULL, NULL);
 	if (!addr) {

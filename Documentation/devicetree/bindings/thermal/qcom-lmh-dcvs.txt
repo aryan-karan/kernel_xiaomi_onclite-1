@@ -46,6 +46,13 @@ Properties:
 			property is valid only if there is valid entry for
 			isens_vref-supply.
 
+- qcom,legacy-lmh-enable:
+	Usage: optional
+	Value type: <none>
+	Definition: Should define this property if legcay LMH hardware algo
+			enablement and default LMH profile enablement
+			is required
+
 Example:
 
 	lmh_dcvs0: qcom,limits-dcvs@0 {
@@ -54,6 +61,7 @@ Example:
 		qcom,affinity = <0>;
 		isens_vref-supply = <&pm8998_l1_ao>;
 		isens-vref-settings = <880000 880000 36000>;
+		qcom,legacy-lmh-enable;
 	};
 
 	CPU0: cpu@0 {
