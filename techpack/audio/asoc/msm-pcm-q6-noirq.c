@@ -696,11 +696,9 @@ static int msm_pcm_volume_ctl_get(struct snd_kcontrol *kcontrol,
 		return -ENODEV;
 	}
 	mutex_lock(&pdata->lock);
-	if (substream->ref_count > 0) {
-		prtd = substream->runtime->private_data;
-		if (prtd)
-			ucontrol->value.integer.value[0] = prtd->volume;
-	}
+	prtd = substream->runtime->private_data;
+	if (prtd)
+		ucontrol->value.integer.value[0] = prtd->volume;
 	mutex_unlock(&pdata->lock);
 	return 0;
 }
@@ -747,12 +745,10 @@ static int msm_pcm_volume_ctl_put(struct snd_kcontrol *kcontrol,
 		return -ENODEV;
 	}
 	mutex_lock(&pdata->lock);
-	if (substream->ref_count > 0) {
-		prtd = substream->runtime->private_data;
-		if (prtd) {
-			rc = msm_pcm_set_volume(prtd, volume);
-			prtd->volume = volume;
-		}
+	prtd = substream->runtime->private_data;
+	if (prtd) {
+		rc = msm_pcm_set_volume(prtd, volume);
+		prtd->volume = volume;
 	}
 	mutex_unlock(&pdata->lock);
 	return rc;
